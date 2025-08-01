@@ -1,0 +1,3 @@
+[submodule "web_infra_lab"]
+	path = web_infra_lab
+	url = https://github.com/waka-man/web_infra_lab.git

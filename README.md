@@ -1,37 +1,115 @@
-# Country-Currency App
+# Country Info & Currency Converter
 
-A simple web application that allows users to explore country information and convert currencies using real-time API data. Deployed using Docker containers behind a load balancer for fault tolerance and scalability.  It uses HTML, CSS, and JavaScript, and is containerized using Docker with Nginx as the web server.
+A lightweight web application that allows users to:
+- Search for **real-time country information** using the REST Countries API
+- **Convert currency** using a live Currency Conversion API
 
-## How the App Works
+It is built using **HTML**, **CSS**, and **JavaScript**, and deployed using **Docker** containers on two web servers behind a **HAProxy load balancer**, demonstrating fault-tolerant and scalable infrastructure.
+AND README.md which has a Demo video on youtube [ https://youtu.be/KwM2hUQuqXE ]
+---
 
-- `index.html`: The main web page structure.
-- `styles.css`: Adds design and layout styling.
-- `main.js`: Contains JavaScript logic to fetch and display:
-  - Country data from the REST Countries API
-  - Currency rates from a currency conversion API
+##  Features
 
-Users enter or select a country, and the app shows its flag, population, capitalcity, and lets them convert currency to another currency.
+- Search country by name
+- Get capital, population, currency code, flag
+- Convert currencies using live exchange rates
+- Responsive frontend layout
 
-## Docker Integration
+---
 
-- `Dockerfile`: Builds a Docker image using Nginx and copies all frontend files into Nginx's default folder.
-- `nginx.conf`: A custom Nginx configuration that controls how files are served.
-- `.dockerignore`: Lists files and folders to exclude when building the Docker image.
+##  How the App Works
 
-## How to Run
+- `index.html`: Main page structure
+- `styles.css`: Styling
+- `main.js`: Fetches data from:
+  - REST Countries API
+  - Currency Conversion API (via external key)
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/country-currency-app.git
+### Example APIs used:
+- Country Info: `https://restcountries.com/v3.1/name/{country}`
+- Currency: `https://v6.exchangerate-api.com/v6/44c7b4155c3e72dbc8f44e41/latest/USD`
+
+---
+
+##  Docker Setup
+
+### Docker Files:
+- `Dockerfile`: Builds a static frontend image using Nginx
+- `nginx.conf`: Optional custom configuration
+- `.dockerignore`: Excludes unnecessary files during image build
+
+### Build & Push:
+```bash
+docker build -t shema123/country-currency-app:latest .
+docker push shema123/country-currency-app:latest
+
+#### How to Run LocallY
+                      Step 1: Clone the Repo
+
+   https://github.com/Shema-8/Country-Info-and-Currency-Converter.git
    cd country-currency-app
 
+                   Step 2: Run App Container (Single instance)
+   docker run -d --name app --restart unless-stopped -p 8080:80 shema123/country-currency-app:latest
 
-##  Image Details
+#### Then visit: http://localhost:8080
 
-- **Docker Hub Repository**: [https://hub.docker.com/r/shema123/country-currency-app](https://hub.docker.com/r/shema123/country-currency-app)
-- **Image Name**: `country-currency-app`
-- **Tag**: `v1`
+##### Multi-Server Deployment with HAProxy
 
-You can pull the image using:
-```bash
-docker pull shema123/country-currency-app:v1
+                    Architecture
+ [Client]
+   ↓
+[HAProxy Load Balancer (lb-01)]
+   ↓             ↓
+[web-01]      [web-02]
+              
+
+                     Docker Commands
+  # Web01
+docker run -d --name web-01 --restart unless-stopped -p 8080:80 shema123/country-currency-app:latest
+
+# Web02
+docker run -d --name web-02 --restart unless-stopped -p 8081:80 shema123/country-currency-app:latest
+
+# HAProxy
+docker run -d --name lb-01 --restart unless-stopped -p 8082:80 \
+  -v $(pwd)/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro haproxy:latest
+
+
+######## Test in browser: http://localhost:8082
+
+###### How to Verify It Works
+   curl only shows HTML — to verify live API interaction, use the browser.
+
+### Test These in Browser:
+  Go to http://localhost:8082
+
+     Enter "Rwanda" or any country → see info like population, flag, currency
+
+     Use currency converter → get live conversion 
+
+     JavaScript is hitting both APIs live
+
+     App is served through HAProxy
+
+     Both web-01 and web-02 are behind load balancer
+
+##### Docker Image Info
+
+      Docker Hub: shema123/country-currency-app
+
+      Image: shema123/country-currency-app
+
+      Tag: latest
+
+##### Exposed Port: 80 (forwarded to 8080, 8081, or 8082 externally)
+
+
+######  DEMO VIDEO 
+ 
+  YOUTUBE VIDEO LINK  https://youtu.be/KwM2hUQuqXE
+   
+
+
+##### Author
+Shema [e.shema2@alustudent.com] — African Leadership University
